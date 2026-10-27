@@ -106,6 +106,8 @@ nav button.on{color:var(--blood-hi)}
 .addrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
 .agent .meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .small{font-size:12.5px}
+a.btn{display:inline-block;text-decoration:none}
+.btn.obs{color:var(--bone-dim);border-color:var(--bone-faint);font-weight:500}
 .x{background:none;border:0;color:var(--bone-faint);font-size:18px;cursor:pointer;padding:0 4px}
 @media (max-width:480px){.tracks{grid-template-columns:1fr} h1{font-size:23px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -151,6 +153,7 @@ const STEPS_B=["SEED","EXPAND","EDIT","VOICE","SHIP"];
 const PLAN_FILE="Dead Reckoning Plan.md";
 let QUERY_DATE="2027-06-01",SESSIONS=[],EVENTS=[],PODCAST_SATS=[],PHASES=[],BOOK1=[],PROPOSAL=[],MEMOIR=[],POSTS=[],AGENT_STEPS=[],AGENTS=[],VOICE=[],TRACKS_MD="",GUARD_MD="";
 let PLAN_META={loaded:0,problems:[],source:""};
+let VAULT="",WFOLDER="",MEMOIR_FILE="";
 const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
 const ISO=/^\d{4}-\d{2}-\d{2}$/;
 const DAYMAP={sun:0,mon:1,tue:2,wed:3,thu:4,fri:5,sat:6};
@@ -172,6 +175,10 @@ function parsePlan(md){
   const out={problems:probs};
   const qm=sec._intro.join("\n").match(/First queries:\s*(\d{4}-\d{2}-\d{2})/i);
   out.QUERY_DATE=qm?qm[1]:"2027-06-01";
+  const intro=sec._intro.join("\n");
+  const vm=intro.match(/^Vault:\s*(.+?)\s*$/mi), wm=intro.match(/^Writing folder:\s*(.+?)\s*$/mi);
+  out.VAULT=vm?vm[1]:""; out.WFOLDER=wm?wm[1].replace(/\/+$/,""):"";
+  const mf=(sec["memoir scenes"]||[]).join("\n").match(/^Memoir file:\s*(.+?)\s*$/mi); out.MEMOIR_FILE=mf?mf[1]:"";
   let u=uniq();
   out.SESSIONS=table("sessions").map(r=>{
     const dow=DAYMAP[(r.day||"").slice(0,3).toLowerCase()], tr=(r.track||"").toUpperCase();
@@ -191,16 +198,16 @@ function parsePlan(md){
     return {n:parseInt(r["#"],10)||0,name:r.name,start:r.from,end:r.to,sat:r.saturday||"",sun:r["sunday morning"]||"",done:r["done when"]||""};
   }).filter(Boolean).sort((a,b)=>a.start<b.start?-1:1);
   u=uniq();
-  out.BOOK1=table("book 1").filter(r=>r.section).map(r=>({id:u("b1-"+slug(r.section)),title:r.section,src:r.source||"",need:r["you write"]||""}));
+  out.BOOK1=table("book 1").filter(r=>r.section).map(r=>({id:u("b1-"+slug(r.section)),title:r.section,src:r.source||"",need:r["you write"]||"",file:r.file||""}));
   u=uniq();
-  out.PROPOSAL=table("proposal").filter(r=>r.piece).map(r=>{if(r.due&&!ISO.test(r.due))bad("Proposal",r,"Due must be YYYY-MM-DD");return {id:u("pr-"+slug(r.piece)),title:r.piece,due:ISO.test(r.due)?r.due:""};});
+  out.PROPOSAL=table("proposal").filter(r=>r.piece).map(r=>{if(r.due&&!ISO.test(r.due))bad("Proposal",r,"Due must be YYYY-MM-DD");return {id:u("pr-"+slug(r.piece)),title:r.piece,due:ISO.test(r.due)?r.due:"",file:r.file||""};});
   u=uniq();
   out.MEMOIR=list("memoir scenes").map(t=>({id:u("m-"+slug(t)),title:t}));
   u=uniq();
   out.POSTS=table("blog posts").filter(r=>r.title).map(r=>{
     if(r.date&&!ISO.test(r.date))bad("Blog posts",r,"Date must be YYYY-MM-DD");
     const si=STEPS_B.indexOf((r["starting step"]||"").toUpperCase().replace("VOICE CHECK","VOICE"));
-    return {id:u("p-"+slug(r.title)),date:ISO.test(r.date)?r.date:"",title:r.title,pillar:r.pillar||"",step:si<0?0:si};
+    return {id:u("p-"+slug(r.title)),date:ISO.test(r.date)?r.date:"",title:r.title,pillar:r.pillar||"",step:si<0?0:si,file:r.file||""};
   });
   u=uniq();
   out.AGENT_STEPS=list("agent steps").map(t=>{const m=t.match(/^\*\*(.+?)\*\*\s*(.*)$/);const title=(m?m[1]:t).replace(/[.:]\s*$/,"");return {id:u("as-"+slug(title)),title,detail:m?m[2]:""};});
@@ -216,9 +223,16 @@ function parsePlan(md){
 function applyPlan(md,source){
   const r=parsePlan(md);
   if(!r.ok){PLAN_META.problems=r.problems;return false;}
-  ({QUERY_DATE,SESSIONS,EVENTS,PODCAST_SATS,PHASES,BOOK1,PROPOSAL,MEMOIR,POSTS,AGENT_STEPS,AGENTS,VOICE,TRACKS_MD,GUARD_MD}=r);
+  ({QUERY_DATE,SESSIONS,EVENTS,PODCAST_SATS,PHASES,BOOK1,PROPOSAL,MEMOIR,POSTS,AGENT_STEPS,AGENTS,VOICE,TRACKS_MD,GUARD_MD,VAULT,WFOLDER,MEMOIR_FILE}=r);
   PLAN_META={loaded:Date.now(),problems:r.problems,source};
   return true;
+}
+/* Open a note in the Obsidian app (works on phone and computer) */
+function obsLink(file,label){
+  if(!file||!VAULT)return "";
+  let path=file.replace(/\.md$/i,"");
+  path=path.startsWith("/")?path.slice(1):(WFOLDER?WFOLDER+"/"+path:path);
+  return `<a class="btn sm obs" href="obsidian://open?vault=${encodeURIComponent(VAULT)}&file=${encodeURIComponent(path)}">${label||"Open in Obsidian"}</a>`;
 }
 /* tiny Markdown renderer for the Two tracks / Guardrails sections */
 function mdHtml(md){
@@ -351,16 +365,16 @@ const stepLabel=(key,steps,def)=>{const c=S.steps[key]??def??0;return c>=steps.l
 function renderBook(){
   const doneCh=BOOK1.filter(c=>(S.steps[c.id]??0)>=5).length;
   const donePr=PROPOSAL.filter(c=>(S.steps[c.id]??0)>=5).length;
-  let h=`<p class="muted">Track A. Every sentence is yours. Tap the step you're on. Steps: ${STEPS_A.join(" → ")}.</p>
+  let h=`<p class="muted">Track A. Every sentence is yours. Tap the step you're on; "Open in Obsidian" takes you to the writing. Steps: ${STEPS_A.join(" → ")}.</p>
   <div class="grid2"><div class="stat"><div class="n">${doneCh}/${BOOK1.length}</div><div class="l">Book 1 sections done</div></div>
   <div class="stat"><div class="n">${donePr}/${PROPOSAL.length}</div><div class="l">proposal pieces done</div></div></div>
   <h2>Book 1: the burnout book</h2><div class="card">`;
   BOOK1.forEach(c=>{h+=`<div class="item"><div class="row between"><span class="ttl">${esc(c.title)}</span>${stepLabel(c.id,STEPS_A)}</div>
-    <div class="small muted">Source: ${esc(c.src)}</div><div class="small faint">You write: ${esc(c.need)}</div>${pipe(c.id,STEPS_A,"A")}</div>`});
+    <div class="small muted">Source: ${esc(c.src)}</div><div class="small faint">You write: ${esc(c.need)}</div>${pipe(c.id,STEPS_A,"A")}${c.file?`<div class="btns">${obsLink(c.file,"Open in Obsidian")}</div>`:""}</div>`});
   h+=`</div><h2>Proposal</h2><div class="card">`;
   PROPOSAL.forEach(c=>{h+=`<div class="item"><div class="row between"><span class="ttl">${esc(c.title)}</span>${stepLabel(c.id,STEPS_A)}</div>
-    <div class="small muted mono">Due ${nice(c.due)}</div>${pipe(c.id,STEPS_A,"A")}</div>`});
-  h+=`</div><h2>Memoir: It Came From Paradise</h2><p class="small muted">Saturdays after the book block. 1 scene a week.</p><div class="card">`;
+    <div class="small muted mono">${c.due?"Due "+nice(c.due):"No due date"}</div>${pipe(c.id,STEPS_A,"A")}${c.file?`<div class="btns">${obsLink(c.file)}</div>`:""}</div>`});
+  h+=`</div><h2>Memoir: It Came From Paradise</h2><p class="small muted">Saturdays after the book block. 1 scene a week.</p>${MEMOIR_FILE?`<div class="btns" style="margin-bottom:6px">${obsLink(MEMOIR_FILE,"Open the memoir in Obsidian")}</div>`:""}<div class="card">`;
   [...MEMOIR,...S.customScenes].forEach(c=>{const custom=c.id.startsWith("cm");h+=`<div class="item"><div class="row between"><span class="ttl">${esc(c.title)}</span><span class="row" style="gap:4px">${stepLabel(c.id,STEPS_A)}${custom?`<button class="x" data-delscene="${c.id}" aria-label="Remove">×</button>`:""}</span></div>${pipe(c.id,STEPS_A,"A")}</div>`});
   h+=`<div class="addrow"><input type="text" id="newScene" placeholder="New scene title"><button class="btn sm" id="addScene">Add</button></div></div>`;
   $("#v-book").innerHTML=h;
@@ -376,7 +390,7 @@ function renderBlog(){
   <div class="stat"><div class="n">${posts.filter(p=>{const c=S.steps[p.id]??p.step;return c===2}).length}</div><div class="l">waiting on your EDIT</div></div></div>
   <h2>Posts</h2><div class="card">`;
   posts.forEach(p=>{const custom=p.id.startsWith("cp");h+=`<div class="item"><div class="row between"><span class="ttl">${esc(p.title)}</span><span class="row" style="gap:4px">${stepLabel(p.id,STEPS_B,p.step)}${custom?`<button class="x" data-delpost="${p.id}" aria-label="Remove">×</button>`:""}</span></div>
-    <div class="small muted mono">${p.date?nice(p.date):"No date"} · ${esc(p.pillar)}</div>${pipe(p.id,STEPS_B,"B",p.step)}</div>`});
+    <div class="small muted mono">${p.date?nice(p.date):"No date"} · ${esc(p.pillar)}</div>${pipe(p.id,STEPS_B,"B",p.step)}${p.file?`<div class="btns">${obsLink(p.file,"Open draft in Obsidian")}</div>`:""}</div>`});
   h+=`<div style="margin-top:12px" class="grid2"><input type="text" id="npT" placeholder="Post title"><select id="npP">${["Burnout","Horror","ON","Memoir dispatch","Digital narcissism","Wild card"].map(x=>`<option>${x}</option>`).join("")}</select><input type="date" id="npD"><button class="btn sm" id="addPost">Add post</button></div></div>
   <h2>How a post ships</h2><div class="card small">
    <p><span class="step tB">SEED</span> Sunday 7:15 pm: your idea note, 2 weeks out.</p>

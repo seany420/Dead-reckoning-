@@ -14,6 +14,10 @@ Rules for editing:
 - If the app can't read a row, it skips it and lists it in the More tab.
 
 First queries: 2027-06-01
+Vault: Sean's Vault
+Writing folder: 30-Projects/30.1-Writing-Projects
+
+The File columns tell the app which note to open in Obsidian. Paths start from the writing folder. Leave a File cell blank for no button.
 
 ## Sessions
 
@@ -82,32 +86,36 @@ First queries: 2027-06-01
 
 ## Book 1
 
-| Section | Source | You write |
-| --- | --- | --- |
-| Opening: the moment it stopped mattering | Burnout Doc foreword + intro; the "it really doesn't matter" street scene | A present-day clinic scene; your walkout story retold from scratch |
-| 1 · What burnout is | Burnout Doc: definition, symptoms, prevalence, causes, risk factors | First-person stakes; less textbook, more you |
-| 2 · The body keeps the bill | Burnout Doc ch 1: stress, the body, sleep, exercise, socialization | Patient composites; your own sleep and body story |
-| 3 · What actually helps | Burnout Doc ch 2: mindfulness + mindlessness, DARN CAT, EARS, SCARED, protective factors | How you use these in the room |
-| 4 · It really doesn't matter | It Really Doesn't Matter: intro, importance of insignificance | The bridge: why accepting insignificance treats burnout |
-| 5 · Horror as practice (optional) | No Track A horror writing yet | New original writing only |
-| Close | Your call | Ends on an image, not a summary |
+File points at your source material for now. When you start a chapter's own note, put its path here instead.
+
+| Section | Source | You write | File |
+| --- | --- | --- | --- |
+| Opening: the moment it stopped mattering | Burnout Doc foreword + intro; the "it really doesn't matter" street scene | A present-day clinic scene; your walkout story retold from scratch | Burnout/Burnout Doc |
+| 1 · What burnout is | Burnout Doc: definition, symptoms, prevalence, causes, risk factors | First-person stakes; less textbook, more you | Burnout/Burnout Doc |
+| 2 · The body keeps the bill | Burnout Doc ch 1: stress, the body, sleep, exercise, socialization | Patient composites; your own sleep and body story | Burnout/Burnout Doc |
+| 3 · What actually helps | Burnout Doc ch 2: mindfulness + mindlessness, DARN CAT, EARS, SCARED, protective factors | How you use these in the room | Burnout/Burnout Doc |
+| 4 · It really doesn't matter | It Really Doesn't Matter: intro, importance of insignificance | The bridge: why accepting insignificance treats burnout | Optimistic Nihilism/It Really Doesn't Matter |
+| 5 · Horror as practice (optional) | No Track A horror writing yet | New original writing only | Track-A-Original/Book-1/00-Book-1-Map |
+| Close | Your call | Ends on an image, not a summary | Track-A-Original/Book-1/00-Book-1-Map |
 
 ## Proposal
 
-| Piece | Due |
-| --- | --- |
-| Chapter outline | 2027-01-17 |
-| Comparable titles | 2027-01-17 |
-| Sample chapter 1 | 2027-02-28 |
-| Sample chapter 2 | 2027-04-11 |
-| Overview | 2027-04-17 |
-| About the author | 2027-04-24 |
-| Audience | 2027-04-24 |
-| Marketing plan | 2027-05-01 |
-| Platform (real numbers) | 2027-05-01 |
-| Query letter | 2027-05-30 |
+| Piece | Due | File |
+| --- | --- | --- |
+| Chapter outline | 2027-01-17 |  |
+| Comparable titles | 2027-01-17 |  |
+| Sample chapter 1 | 2027-02-28 |  |
+| Sample chapter 2 | 2027-04-11 |  |
+| Overview | 2027-04-17 |  |
+| About the author | 2027-04-24 |  |
+| Audience | 2027-04-24 |  |
+| Marketing plan | 2027-05-01 |  |
+| Platform (real numbers) | 2027-05-01 |  |
+| Query letter | 2027-05-30 |  |
 
 ## Memoir scenes
+
+Memoir file: Biography-Memoir/It-Came-From-Paradise
 
 - Foreword
 - Overdose On Broadway
@@ -122,16 +130,16 @@ First queries: 2027-06-01
 
 Starting step is where a post begins in the app: SEED, EXPAND, EDIT, VOICE or SHIP.
 
-| Date | Title | Pillar | Starting step |
-| --- | --- | --- | --- |
-| 2026-12-01 | You Don't Matter. That's the Best News | ON | EDIT |
-| 2026-12-08 | You're Not Lazy. You're Depleted. | Burnout | EDIT |
-| 2026-12-15 | Why Horror Is the Most Honest Genre | Horror | EDIT |
-| 2026-12-22 | Mindlessness as Burnout Medicine | Burnout | EDIT |
-| 2026-12-29 | The Importance of Being Insignificant | ON | EDIT |
-| 2027-01-05 | Your Brain Goes Anaerobic Before You Do | Burnout | EDIT |
-| 2027-01-12 | The Babadook Is a Better Grief Counselor | Horror | EDIT |
-| 2027-01-19 | The Digital Panopticon | Digital narcissism | EDIT |
+| Date | Title | Pillar | Starting step | File |
+| --- | --- | --- | --- | --- |
+| 2026-12-01 | You Don't Matter. That's the Best News | ON | EDIT | Substack-Unsolicited-Noise/Optimistic-Nihilism/drafts/You-Dont-Matter-Thats-the-Best-News |
+| 2026-12-08 | You're Not Lazy. You're Depleted. | Burnout | EDIT | Substack-Unsolicited-Noise/Burnout/drafts/Youre-Not-Lazy-Youre-Depleted |
+| 2026-12-15 | Why Horror Is the Most Honest Genre | Horror | EDIT | Substack-Unsolicited-Noise/Horror/drafts/Why-Horror-Is-the-Most-Honest-Genre |
+| 2026-12-22 | Mindlessness as Burnout Medicine | Burnout | EDIT | Substack-Unsolicited-Noise/Burnout/drafts/Mindlessness-as-Burnout-Medicine |
+| 2026-12-29 | The Importance of Being Insignificant | ON | EDIT | Substack-Unsolicited-Noise/Optimistic-Nihilism/drafts/The-Importance-of-Being-Insignificant |
+| 2027-01-05 | Your Brain Goes Anaerobic Before You Do | Burnout | EDIT | Substack-Unsolicited-Noise/Burnout/drafts/Your-Brain-Goes-Anaerobic-Before-You-Do |
+| 2027-01-12 | The Babadook Is a Better Grief Counselor | Horror | EDIT | Substack-Unsolicited-Noise/Horror/drafts/The-Babadook-Is-a-Better-Grief-Counselor |
+| 2027-01-19 | The Digital Panopticon | Digital narcissism | EDIT | Substack-Unsolicited-Noise/Optimistic-Nihilism/drafts/The-Digital-Panopticon |
 
 ## Agent steps
 
