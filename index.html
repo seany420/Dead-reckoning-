@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0909">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dead Reckoning">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Dead Reckoning</title>
+<style>
+:root{
+  --bg:#0b0909; --surface:#141111; --surface2:#1c1717; --line:#2c2524;
+  --bone:#e9e2d4; --bone-dim:#a39a8c; --bone-faint:#6d655b;
+  --blood:#b3121b; --blood-hi:#e0313a;
+  --a:#d4553a; --b:#6fc59c; --ag:#d9a94e; --opt:#8c8479;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--bone);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:calc(var(--safe-t) + 8px) 0 calc(var(--safe-b) + 84px)}
+main{max-width:720px;margin:0 auto;padding:0 16px}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:.01em;margin:0}
+h1{font-size:26px} h2{font-size:20px;margin:28px 0 10px} h3{font-size:16px;margin:18px 0 8px}
+p{margin:6px 0}
+a{color:var(--blood-hi)}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:10px 0 4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--blood-hi);text-transform:uppercase}
+.sub{color:var(--bone-dim);font-size:13px}
+.mono{font-family:var(--mono)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+.card.hot{border-color:var(--blood);box-shadow:inset 3px 0 0 var(--blood)}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat .n{font-family:var(--serif);font-size:28px;line-height:1.1}
+.stat .l{font-size:12px;color:var(--bone-dim)}
+.bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:var(--blood);border-radius:3px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:2px 7px;border-radius:6px;border:1px solid currentColor;white-space:nowrap}
+.tA{color:var(--a)} .tB{color:var(--b)} .tAG{color:var(--ag)} .tOPT{color:var(--opt)}
+.step{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.08em}
+.muted{color:var(--bone-dim)} .faint{color:var(--bone-faint)}
+.sess{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.sess:first-child{border-top:0}
+.sess .body{flex:1;min-width:0}
+.sess .when{font-family:var(--mono);font-size:12px;color:var(--bone-dim)}
+.sess.done .ttl{text-decoration:line-through;color:var(--bone-faint)}
+.sess.today{background:linear-gradient(90deg,rgba(179,18,27,.10),transparent);margin:0 -14px;padding-left:14px;padding-right:14px}
+.ck{appearance:none;-webkit-appearance:none;width:26px;height:26px;border:2px solid var(--bone-faint);border-radius:7px;flex:none;margin:1px 0 0;display:grid;place-items:center;cursor:pointer;background:transparent}
+.ck:checked{background:var(--blood);border-color:var(--blood)}
+.ck:checked::after{content:"";width:7px;height:13px;border:solid var(--bone);border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+details{border-top:1px solid var(--line)} details:first-of-type{border-top:0}
+summary{list-style:none;cursor:pointer;padding:12px 0;display:flex;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary .chev{margin-left:auto;color:var(--bone-faint);transition:transform .2s}
+details[open] summary .chev{transform:rotate(90deg)}
+.pipe{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.pipe button{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;padding:5px 7px;border-radius:6px;border:1px solid var(--line);background:var(--surface2);color:var(--bone-faint);cursor:pointer}
+.pipe button.past{color:var(--bone-dim);border-color:var(--bone-faint)}
+.pipe button.past::before{content:"✓ "}
+.pipe button.cur{color:var(--bg);background:var(--bone);border-color:var(--bone);font-weight:700}
+.pipe.A button.cur{background:var(--a);border-color:var(--a)}
+.pipe.B button.cur{background:var(--b);border-color:var(--b)}
+.item{padding:12px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .ttl{font-weight:600}
+.done-badge{font-family:var(--mono);font-size:11px;color:var(--b)}
+input[type=text],input[type=number],input[type=password],input[type=date],select,textarea{background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--bone);padding:9px 10px;font:inherit;font-size:14px;width:100%}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--bone-dim) 50%),linear-gradient(135deg,var(--bone-dim) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:28px}
+.btn{font:inherit;font-size:14px;font-weight:600;padding:10px 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--bone);cursor:pointer}
+.btn.red{background:var(--blood);border-color:var(--blood)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.words{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.words label{font-size:12px;color:var(--bone-dim);display:block;margin-bottom:4px}
+.ev{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ev .d{font-family:var(--mono);font-size:12px;color:var(--bone-dim);width:68px;flex:none;padding-top:3px}
+.ev.past .t{color:var(--bone-faint)}
+.k-DEADLINE{color:var(--blood-hi)} .k-DECIDE{color:var(--ag)} .k-SEND{color:var(--b)} .k-LAUNCH{color:var(--b)} .k-CHECKPOINT{color:var(--bone-dim)} .k-START{color:var(--bone-dim)} .k-PODCAST{color:#9aa7e0}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:8px 6px;border-top:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--bone-dim);font-weight:600;border-top:0}
+.tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trk{border-radius:12px;padding:12px;border:1px solid var(--line);background:var(--surface)}
+.trk h3{margin:0 0 6px}
+.trk ol{margin:6px 0 0;padding-left:20px}
+.trk li{margin:4px 0}
+.trk.A{box-shadow:inset 0 3px 0 var(--a)} .trk.B{box-shadow:inset 0 3px 0 var(--b)}
+.fire{border:1px dashed var(--bone-faint);border-radius:12px;padding:12px;text-align:center;margin-top:10px;font-size:14px}
+.hl{background:var(--b);color:var(--bg);border-radius:4px;padding:0 4px}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(11,9,9,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 4px calc(var(--safe-b) + 6px);display:flex;justify-content:space-around;z-index:10}
+nav button{flex:1;background:none;border:0;color:var(--bone-faint);font:600 10.5px/1.2 var(--mono);letter-spacing:.06em;padding:6px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;text-transform:uppercase}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
+nav button.on{color:var(--blood-hi)}
+.view{display:none} .view.on{display:block}
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 84px);transform:translateX(-50%);background:var(--bone);color:var(--bg);padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+.addrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.agent .meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.small{font-size:12.5px}
+.x{background:none;border:0;color:var(--bone-faint);font-size:18px;cursor:pointer;padding:0 4px}
+@media (max-width:480px){.tracks{grid-template-columns:1fr} h1{font-size:23px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><div class="brand">Dead Reckoning</div><h1 id="hdr">Today</h1></div>
+    <div class="sub mono" id="hdrDate"></div>
+  </div>
+
+  <!-- TODAY -->
+  <section class="view on" id="v-today"></section>
+  <!-- BOOK (Track A) -->
+  <section class="view" id="v-book"></section>
+  <!-- BLOG (Track B) -->
+  <section class="view" id="v-blog"></section>
+  <!-- YEAR -->
+  <section class="view" id="v-year"></section>
+  <!-- AGENTS -->
+  <section class="view" id="v-agents"></section>
+  <!-- MORE -->
+  <section class="view" id="v-more"></section>
+</main>
+
+<nav id="nav">
+  <button data-v="today" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>Today</button>
+  <button data-v="book"><svg viewBox="0 0 24 24"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg>Book</button>
+  <button data-v="blog"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Blog</button>
+  <button data-v="year"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Year</button>
+  <button data-v="agents"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c1.7.6 2.7 2.4 3 5.5"/></svg>Agents</button>
+  <button data-v="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ===================== PLAN DATA (mirrors the Writing Plan doc + Spector file) ===================== */
+const STEPS_A=["MAP","WRITE","REVISE","EDIT","PROOF"];
+const STEPS_B=["SEED","EXPAND","EDIT","VOICE","SHIP"];
+const QUERY_DATE="2027-06-01";
+
+const SESSIONS=[
+ {id:"satMap",dow:6,first:"2026-11-07",until:"2027-01-16",time:"8:00 to 11:00 am",track:"A",step:"MAP",title:"Book 1 outline + comps",notes:"Reread 1 source section. Write a 1-paragraph chapter summary in your own words. Read 1 comp for 30 min. Map file: Track-A-Original/Book-1/00-Book-1-Map."},
+ {id:"satCh1",dow:6,first:"2027-01-23",until:"2027-02-27",time:"8:00 to 11:00 am",track:"A",step:"WRITE",title:"Sample chapter 1",notes:"Forward only, no fixing. 1,000 words. Retell your source passages in your own words."},
+ {id:"satCh2",dow:6,first:"2027-03-06",until:"2027-04-10",time:"8:00 to 11:00 am",track:"A",step:"WRITE",title:"Sample chapter 2",notes:"Forward only. 1,000 words."},
+ {id:"satProp",dow:6,first:"2027-04-17",until:"2027-05-08",time:"8:00 to 11:00 am",track:"A",step:"WRITE",title:"Proposal pages",notes:"Apr 17 overview. Apr 24 about + audience. May 1 marketing + platform. May 8 comps + chapter outline."},
+ {id:"satPolish",dow:6,first:"2027-05-15",until:"2027-05-29",time:"8:00 to 11:00 am",track:"A",step:"EDIT",title:"Proposal from reader notes",notes:"You change the words. Claude may only point at problems."},
+ {id:"satNext",dow:6,first:"2027-06-05",until:"2027-12-25",time:"8:00 to 11:00 am",track:"A",step:"WRITE",title:"Book 1 next chapter",notes:"Keep drafting so you're ahead if an agent asks for more. 1,000 words."},
+ {id:"satMemoir",dow:6,first:"2026-11-07",until:"2027-12-25",time:"11:15 am to 12:00",track:"A",step:"WRITE",title:"Memoir: 1 Paradise scene",notes:"It Came From Paradise. One scene, start to finish."},
+ {id:"sunMap",dow:0,first:"2026-11-08",until:"2027-01-17",time:"8:00 to 9:30 am",track:"A",step:"MAP",title:"Tighten outline + log comps",notes:"Reread Saturday's summary, tighten it, add the comp you read to the list."},
+ {id:"sunRev",dow:0,first:"2027-01-24",until:"2027-04-11",time:"8:00 to 9:30 am",track:"A",step:"REVISE",title:"This week's chapter pages",notes:"Restructure, add or cut scenes. You expand here; nobody else does."},
+ {id:"sunAgR",dow:0,first:"2027-04-18",until:"2027-05-30",time:"8:00 to 9:30 am",track:"AG",step:"RESEARCH",title:"6 agents",notes:"Recent psychology/horror deals, wishlist, how they take queries. Log in QueryTracker and the Agents tab."},
+ {id:"sunAgT",dow:0,first:"2027-06-06",until:"2027-09-26",time:"8:00 to 9:30 am",track:"AG",step:"TRACK",title:"Replies + next batch",notes:"Log replies. Send a requested proposal within 48 hours. Personalize the next batch."},
+ {id:"sunRev2",dow:0,first:"2027-10-03",until:"2027-12-26",time:"8:00 to 9:30 am",track:"A",step:"REVISE",title:"Book 1 pages",notes:"Reread and rework the week's pages."},
+ {id:"sunB",dow:0,first:"2026-11-01",until:"2027-12-26",time:"6:00 to 7:15 pm",track:"B",step:"EDIT → SHIP",title:"Next Tuesday's post",notes:"EDIT: fill [SEAN] markers, cut what isn't you. VOICE CHECK: read aloud. SHIP: Blog on-deck + Substack for Tuesday. From Jan 3, record the read-aloud."},
+ {id:"sunSeed",dow:0,first:"2026-11-01",until:"2027-12-26",time:"7:15 to 7:35 pm",track:"B",step:"SEED",title:"+ weekly review",notes:"1 idea note for the post 2 weeks out. Ask Claude to EXPAND last week's seed. Log words below."},
+ {id:"wedOpt",dow:3,first:"2026-11-04",until:"2027-12-29",time:"7:30 to 8:30 pm",track:"OPT",step:"OPTIONAL",title:"A WRITE or B EDIT",notes:"Only if you have it. 500 more Book 1 words, or get a post ahead. Skipping costs nothing.",optional:true},
+];
+
+const EVENTS=[
+ ["2026-11-08","DECIDE","Lock Book 1 + subscriber goal"],
+ ["2026-11-24","CHECKPOINT","4 posts in the blog queue"],
+ ["2026-12-01","LAUNCH","Blog + Substack, first post 6am"],
+ ["2027-01-03","START","Read-aloud recordings"],
+ ["2027-01-17","DEADLINE","Book 1 outline + comps locked"],
+ ["2027-01-17","DECIDE","Which 2 sample chapters"],
+ ["2027-02-28","DEADLINE","Sample chapter 1 done"],
+ ["2027-04-06","LAUNCH","Substack paid tier"],
+ ["2027-04-11","DEADLINE","Sample chapter 2 done"],
+ ["2027-05-01","PODCAST","First monthly episode"],
+ ["2027-05-09","SEND","Proposal to 2 or 3 readers"],
+ ["2027-05-30","DEADLINE","40 agents listed + query final"],
+ ["2027-06-01","SEND","Queries batch 1 (10 agents)"],
+ ["2027-07-11","DECIDE","Batch 1 results"],
+ ["2027-07-13","SEND","Queries batch 2 (10 agents)"],
+ ["2027-08-08","DECIDE","Batch 2 results"],
+ ["2027-08-10","SEND","Queries batch 3 (10 agents)"],
+ ["2027-09-05","DECIDE","Batch 3 results"],
+ ["2027-09-07","SEND","Queries batch 4 (10 agents)"],
+ ["2027-10-03","DECIDE","Offer or next round"],
+].map(([date,kind,title],i)=>({id:"ev"+i,date,kind,title}));
+const PODCAST_SATS=["2027-05-01","2027-06-05","2027-07-03","2027-08-07","2027-09-04","2027-10-02","2027-11-06","2027-12-04"];
+
+const PHASES=[
+ {n:0,name:"Setup",start:"2026-10-27",end:"2026-11-07",sat:"Nothing yet",sun:"Track B starts Sun Nov 1",done:"Calendar imported, Book 1 decided (Nov 8)"},
+ {n:1,name:"Map",start:"2026-11-08",end:"2027-01-17",sat:"A · MAP: reread 1 source section, write a 1-paragraph chapter summary, read 1 comp",sun:"A · MAP: tighten the outline, log the comp",done:"Outline + 5 to 8 comps locked, 2 sample chapters chosen (Jan 17)"},
+ {n:2,name:"Sample chapter 1",start:"2027-01-18",end:"2027-02-28",sat:"A · WRITE: 1,000 words",sun:"A · REVISE",done:"Chapter done (Feb 28)"},
+ {n:3,name:"Sample chapter 2",start:"2027-03-01",end:"2027-04-11",sat:"A · WRITE: 1,000 words",sun:"A · REVISE",done:"Chapter done (Apr 11)"},
+ {n:4,name:"Proposal pages",start:"2027-04-12",end:"2027-05-09",sat:"A · WRITE: 1 proposal page a week",sun:"AGENTS · RESEARCH: 6 agents",done:"Proposal to 2 or 3 readers (May 9)"},
+ {n:5,name:"Polish",start:"2027-05-10",end:"2027-05-31",sat:"A · EDIT: work through reader notes",sun:"AGENTS · RESEARCH",done:"40 agents listed, query final (May 30)"},
+ {n:6,name:"Querying",start:"2027-06-01",end:"2027-10-02",sat:"A · WRITE: next Book 1 chapter",sun:"AGENTS · TRACK: log replies, prep next batch",done:"4 batches out: Jun 1, Jul 13, Aug 10, Sep 7"},
+ {n:7,name:"Decide",start:"2027-10-03",end:"2027-12-31",sat:"A · WRITE",sun:"A · REVISE",done:"Offer, or revise and query 20 more (Oct 3)"},
+];
+
+const BOOK1=[
+ {id:"b1-open",title:"Opening: the moment it stopped mattering",src:"Burnout Doc foreword + intro; the \"it really doesn't matter\" street scene",need:"A present-day clinic scene; your walkout story retold from scratch"},
+ {id:"b1-1",title:"1 · What burnout is",src:"Burnout Doc: definition, symptoms, prevalence, causes, risk factors",need:"First-person stakes; less textbook, more you"},
+ {id:"b1-2",title:"2 · The body keeps the bill",src:"Burnout Doc ch 1: stress, the body, sleep, exercise, socialization",need:"Patient composites; your own sleep and body story"},
+ {id:"b1-3",title:"3 · What actually helps",src:"Burnout Doc ch 2: mindfulness + mindlessness, DARN CAT, EARS, SCARED, protective factors",need:"How you use these in the room"},
+ {id:"b1-4",title:"4 · It really doesn't matter",src:"It Really Doesn't Matter: intro, importance of insignificance",need:"The bridge: why accepting insignificance treats burnout"},
+ {id:"b1-5",title:"5 · Horror as practice (optional)",src:"No Track A horror writing yet",need:"New original writing only"},
+ {id:"b1-close",title:"Close",src:"Your call",need:"Ends on an image, not a summary"},
+];
+const PROPOSAL=[
+ {id:"pr-outline",title:"Chapter outline",due:"2027-01-17"},
+ {id:"pr-comps",title:"Comparable titles",due:"2027-01-17"},
+ {id:"pr-s1",title:"Sample chapter 1",due:"2027-02-28"},
+ {id:"pr-s2",title:"Sample chapter 2",due:"2027-04-11"},
+ {id:"pr-over",title:"Overview",due:"2027-04-17"},
+ {id:"pr-about",title:"About the author",due:"2027-04-24"},
+ {id:"pr-aud",title:"Audience",due:"2027-04-24"},
+ {id:"pr-mkt",title:"Marketing plan",due:"2027-05-01"},
+ {id:"pr-plat",title:"Platform (real numbers)",due:"2027-05-01"},
+ {id:"pr-query",title:"Query letter",due:"2027-05-30"},
+];
+const MEMOIR=["Foreword","Overdose On Broadway","Coming On-line","The End of Religion (For Me)","Drugs Are Bad Kids","Work and Jobs","The River","Opioid Pain Medication"]
+  .map((t,i)=>({id:"m"+i,title:t}));
+const POSTS=[
+ ["2026-12-01","You Don't Matter. That's the Best News","ON"],
+ ["2026-12-08","You're Not Lazy. You're Depleted.","Burnout"],
+ ["2026-12-15","Why Horror Is the Most Honest Genre","Horror"],
+ ["2026-12-22","Mindlessness as Burnout Medicine","Burnout"],
+ ["2026-12-29","The Importance of Being Insignificant","ON"],
+ ["2027-01-05","Your Brain Goes Anaerobic Before You Do","Burnout"],
+ ["2027-01-12","The Babadook Is a Better Grief Counselor","Horror"],
+ ["2027-01-19","The Digital Panopticon","Digital narcissism"],
+].map(([date,title,pillar],i)=>({id:"p"+i,date,title,pillar,step:2}));
+const AGENT_STEPS=[
+ ["Grow a platform while you write","Log Substack subscribers and open rate monthly. Talks, committee work, ONAS and PFUS all count."],
+ ["Finish the proposal before you query","Proposal to readers May 9. When an agent asks, it goes out within 48 hours."],
+ ["Build a list of 40 agents","Sunday mornings Apr 18 to May 30. Publishers Marketplace, QueryTracker, Manuscript Wish List, comps' acknowledgments."],
+ ["Write a 1-page query","Hook sentence, 1 paragraph on the book, 2 comps, bio + platform, why this agent."],
+ ["Send 10 at a time","Jun 1, Jul 13, Aug 10, Sep 7. Personalize each one."],
+ ["Read the results before each batch","0 requests = fix the query. Requests then passes = fix the proposal or samples."],
+ ["When an offer comes","Book a call. Ask about recent deals and editing style. Tell every agent still reading, give them 1 to 2 weeks."],
+ ["After you sign","Revise the proposal together, agent pitches editors, write the full book on contract."],
+].map(([t,d],i)=>({id:"as"+i,title:t,detail:d}));
+const AGENTS=[
+ {id:"ag-vicente",name:"Maria Vicente",agency:"P.S. Literary",fit:"Horror + psychology; reps Nina Nesseth; wants mental health nonfiction",how:"Email",note:"Open. Top target.",url:"https://www.psliterary.com/"},
+ {id:"ag-bergh",name:"Kelly Bergh",agency:"Lucinda Literary",fit:"Popular psychology, research-driven, new frameworks",how:"Agency form",note:"Open",url:"https://lucindaliterary.com/agency/agents/kelly-bergh/"},
+ {id:"ag-halpern",name:"Lucinda Halpern",agency:"Lucinda Literary",fit:"Credentialed experts with original frameworks",how:"Agency form",note:"Prefers referrals",url:"https://manuscriptwishlist.com/mswl-post/lucinda-halpern/"},
+ {id:"ag-weis",name:"Jennifer Weis",agency:"The Weis Agency",fit:"Horror, psychology, memoir, self-help",how:"Email",note:"Check",url:"https://www.theweisagency.com/"},
+ {id:"ag-bourret",name:"Michael Bourret",agency:"Dystel, Goderich & Bourret",fit:"Horror, psychology, memoir, narrative nonfiction",how:"QueryManager",note:"Check",url:"https://www.dystel.com/"},
+ {id:"ag-panettieri",name:"Gina Panettieri",agency:"Talcott Notch",fit:"Horror, psychology, self-help, memoir",how:"QueryManager",note:"Check",url:"http://www.talcottnotch.net/"},
+ {id:"ag-mcbride",name:"Margret McBride",agency:"McBride Literary",fit:"Psychology, self-help, memoir; San Diego",how:"QueryManager",note:"Check",url:"http://www.mcbrideliterary.com/"},
+ {id:"ag-krienke",name:"Mary Krienke",agency:"Sterling Lord Literistic",fit:"Voice-driven nonfiction + memoir on mental health",how:"Verify",note:"Older listing",url:"https://writersdigest.com/getting-published/new-literary-agent-alert-mary-krienke-of-sterling-lord-literistic"},
+ {id:"ag-cappello",name:"Victoria Cappello",agency:"The Bent Agency",fit:"Expert-driven psychology + pop culture",how:"Email when open",note:"Closed. Watch.",url:"https://www.thebentagency.com/victoria-cappello"},
+];
+const AG_STATUS=["To research","Researched","Queried","Requested","Pass","Offer"];
+const VOICE=["Read it out loud","No em dashes","No \"it's not X, it's Y\" or any negate-then-correct line","No banned words (delve, crucial, leverage, robust, foster, ultimately...)","Opens in a room, a moment, or a body","Paragraphs 1 to 3 sentences, rhythm uneven","Numbers as digits, contractions","Not a list of exactly 3","If criticizing a group, you're inside it","Ends on an image or a blunt binary"];
+
+/* ===================== STATE ===================== */
+const LS="deadreckoning_v1";
+const blank=()=>({v:1,updated:0,checks:{},words:{},steps:{},customPosts:[],customScenes:[],agents:{},customAgents:[],voice:{},sync:{}});
+let S=(()=>{try{return Object.assign(blank(),JSON.parse(localStorage.getItem(LS))||{})}catch(e){return blank()}})();
+function save(silent){S.updated=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){} if(!silent)schedulePush();}
+
+/* ===================== DATE HELPERS ===================== */
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const P=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=P(s);d.setDate(d.getDate()+n);return ymd(d)};
+const diffDays=(a,b)=>Math.round((P(b)-P(a))/864e5);
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const nice=s=>{const d=P(s);return `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`};
+const short=s=>{const d=P(s);return `${MON[d.getMonth()]} ${d.getDate()}`};
+let TODAY=ymd(new Date());
+const weekMon=s=>{const d=P(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return ymd(d)};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function sessionsOn(date){
+  const dow=P(date).getDay();
+  return SESSIONS.filter(s=>s.dow===dow&&date>=s.first&&date<=s.until);
+}
+function weekSessions(mon){
+  const out=[];
+  for(let i=0;i<7;i++){const d=addDays(mon,i);sessionsOn(d).forEach(s=>out.push({s,date:d}));}
+  return out;
+}
+const curPhase=()=>PHASES.find(p=>TODAY>=p.start&&TODAY<=p.end)||(TODAY<PHASES[0].start?PHASES[0]:PHASES[PHASES.length-1]);
+const trackTag=t=>({A:'<span class="tag tA">TRACK A</span>',B:'<span class="tag tB">TRACK B</span>',AG:'<span class="tag tAG">AGENTS</span>',OPT:'<span class="tag tOPT">OPTIONAL</span>'}[t]);
+
+/* ===================== RENDER: TODAY ===================== */
+function renderToday(){
+  const ph=curPhase();
+  const span=Math.max(1,diffDays(ph.start,ph.end)), into=Math.min(span,Math.max(0,diffDays(ph.start,TODAY)));
+  const nextEv=EVENTS.filter(e=>e.date>=TODAY&&!S.checks[e.id])[0];
+  const toQ=diffDays(TODAY,QUERY_DATE);
+  const mon=weekMon(TODAY), wk=weekSessions(mon);
+  const reqd=wk.filter(x=>!x.s.optional), doneN=reqd.filter(x=>S.checks[`s:${x.s.id}:${x.date}`]).length;
+  const W=S.words[mon]||{book:"",memoir:""};
+  const totalBook=Object.values(S.words).reduce((a,w)=>a+(+w.book||0),0);
+  const totalMem=Object.values(S.words).reduce((a,w)=>a+(+w.memoir||0),0);
+  const podcastSat=PODCAST_SATS.filter(d=>d>=mon&&d<=addDays(mon,6))[0];
+  const evThisWeek=EVENTS.filter(e=>e.date>=mon&&e.date<=addDays(mon,6));
+
+  let h=`<div class="card hot">
+    <div class="row between"><span class="mono small muted">PHASE ${ph.n} OF 7</span><span class="mono small muted">${short(ph.start)} to ${short(ph.end)}</span></div>
+    <h2 style="margin:4px 0 2px">${esc(ph.name)}</h2>
+    <p class="small"><b>Sat:</b> ${esc(ph.sat)}<br><b>Sun morning:</b> ${esc(ph.sun)}</p>
+    <p class="small muted">Done when: ${esc(ph.done)}</p>
+    <div class="bar"><i style="width:${Math.round(into/span*100)}%"></i></div>
+  </div>
+  <div class="grid2">
+    <div class="stat"><div class="n">${nextEv?Math.max(0,diffDays(TODAY,nextEv.date)):"·"}</div><div class="l">${nextEv?`days to <span class="k-${nextEv.kind}">${nextEv.kind}</span>: ${esc(nextEv.title)}`:"No deadlines left"}</div></div>
+    <div class="stat"><div class="n">${toQ>0?toQ:"Live"}</div><div class="l">${toQ>0?"days until first queries (Jun 1, 2027)":"Querying has started"}</div></div>
+    <div class="stat"><div class="n">${doneN}/${reqd.length}</div><div class="l">sessions this week</div><div class="bar"><i style="width:${reqd.length?Math.round(doneN/reqd.length*100):0}%"></i></div></div>
+    <div class="stat"><div class="n">${blogStreak()}</div><div class="l">week Track B streak</div></div>
+  </div>
+  <h2>This week <span class="faint mono small">${short(mon)} to ${short(addDays(mon,6))}</span></h2>`;
+  if(podcastSat) h+=`<div class="card small"><span class="k-PODCAST mono">PODCAST · RECORD</span> Monthly episode on ${nice(podcastSat)}. It replaces that morning's Book 1 block.</div>`;
+  h+=`<div class="card">`;
+  if(!wk.length) h+=`<p class="muted">No sessions scheduled this week.</p>`;
+  wk.forEach(({s,date})=>{
+    const k=`s:${s.id}:${date}`, on=!!S.checks[k];
+    h+=`<div class="sess${on?" done":""}${date===TODAY?" today":""}">
+      <input type="checkbox" class="ck" data-k="${k}" ${on?"checked":""} aria-label="${esc(s.title)} done">
+      <div class="body">
+        <div class="row" style="gap:8px;flex-wrap:wrap">${trackTag(s.track)}<span class="step ${s.track==="A"?"tA":s.track==="B"?"tB":s.track==="AG"?"tAG":"tOPT"}">${esc(s.step)}</span></div>
+        <div class="ttl" style="font-weight:600;margin-top:3px">${esc(s.title)}</div>
+        <div class="when">${nice(date)}${date===TODAY?" · TODAY":""} · ${esc(s.time)}</div>
+        <div class="small muted" style="margin-top:3px">${esc(s.notes)}</div>
+      </div></div>`;
+  });
+  h+=`</div>`;
+  if(evThisWeek.length){
+    h+=`<h3>Dated this week</h3><div class="card">`+evThisWeek.map(evRow).join("")+`</div>`;
+  }
+  h+=`<h3>Words this week (Track A)</h3><div class="card">
+    <div class="words"><div><label for="wBook">Book 1</label><input type="number" inputmode="numeric" min="0" id="wBook" value="${esc(W.book)}" placeholder="0"></div>
+    <div><label for="wMem">Memoir</label><input type="number" inputmode="numeric" min="0" id="wMem" value="${esc(W.memoir)}" placeholder="0"></div></div>
+    <p class="small muted" style="margin-top:10px">All time: <b>${totalBook.toLocaleString()}</b> Book 1 words · <b>${totalMem.toLocaleString()}</b> memoir words</p></div>`;
+  $("#v-today").innerHTML=h;
+  const wsave=()=>{S.words[mon]={book:$("#wBook").value,memoir:$("#wMem").value};save();};
+  $("#wBook").onchange=wsave; $("#wMem").onchange=wsave;
+}
+function blogStreak(){
+  let n=0, mon=weekMon(TODAY);
+  // current week counts only if done; otherwise start from last week
+  const sunOf=m=>addDays(m,6);
+  if(!S.checks[`s:sunB:${sunOf(mon)}`]) mon=addDays(mon,-7);
+  while(sunOf(mon)>="2026-11-01"&&S.checks[`s:sunB:${sunOf(mon)}`]){n++;mon=addDays(mon,-7);}
+  return n;
+}
+function evRow(e){
+  const k=e.id,on=!!S.checks[k],past=e.date<TODAY;
+  return `<div class="ev${past&&!on?" past":""}"><input type="checkbox" class="ck" data-k="${k}" ${on?"checked":""} aria-label="${esc(e.title)} done">
+   <div class="d">${short(e.date)}<br><span class="faint">${DOW[P(e.date).getDay()]}</span></div>
+   <div class="t"><span class="mono small k-${e.kind}">${e.kind}</span><div style="${on?"text-decoration:line-through;color:var(--bone-faint)":""}">${esc(e.title)}</div></div></div>`;
+}
+
+/* ===================== PIPELINE (step tracker) ===================== */
+function pipe(key,steps,track,def){
+  const cur=S.steps[key]??def??0;
+  let h=`<div class="pipe ${track}">`;
+  steps.forEach((st,i)=>{h+=`<button data-step="${key}" data-i="${i}" class="${i<cur?"past":i===cur?"cur":""}">${st}</button>`});
+  h+=`<button data-step="${key}" data-i="${steps.length}" class="${cur>=steps.length?"cur":""}">DONE</button></div>`;
+  return h;
+}
+const stepLabel=(key,steps,def)=>{const c=S.steps[key]??def??0;return c>=steps.length?'<span class="done-badge">DONE</span>':`<span class="mono small muted">on ${steps[c]}</span>`};
+
+/* ===================== RENDER: BOOK (Track A) ===================== */
+function renderBook(){
+  const doneCh=BOOK1.filter(c=>(S.steps[c.id]??0)>=5).length;
+  const donePr=PROPOSAL.filter(c=>(S.steps[c.id]??0)>=5).length;
+  let h=`<p class="muted">Track A. Every sentence is yours. Tap the step you're on. Steps: ${STEPS_A.join(" → ")}.</p>
+  <div class="grid2"><div class="stat"><div class="n">${doneCh}/${BOOK1.length}</div><div class="l">Book 1 sections done</div></div>
+  <div class="stat"><div class="n">${donePr}/${PROPOSAL.length}</div><div class="l">proposal pieces done</div></div></div>
+  <h2>Book 1: the burnout book</h2><div class="card">`;
+  BOOK1.forEach(c=>{h+=`<div class="item"><div class="row between"><span class="ttl">${esc(c.title)}</span>${stepLabel(c.id,STEPS_A)}</div>
+    <div class="small muted">Source: ${esc(c.src)}</div><div class="small faint">You write: ${esc(c.need)}</div>${pipe(c.id,STEPS_A,"A")}</div>`});
+  h+=`</div><h2>Proposal</h2><div class="card">`;
+  PROPOSAL.forEach(c=>{h+=`<div class="item"><div class="row between"><span class="ttl">${esc(c.title)}</span>${stepLabel(c.id,STEPS_A)}</div>
+    <div class="small muted mono">Due ${nice(c.due)}</div>${pipe(c.id,STEPS_A,"A")}</div>`});
+  h+=`</div><h2>Memoir: It Came From Paradise</h2><p class="small muted">Saturdays after the book block. 1 scene a week.</p><div class="card">`;
+  [...MEMOIR,...S.customScenes].forEach(c=>{const custom=c.id.startsWith("cm");h+=`<div class="item"><div class="row between"><span class="ttl">${esc(c.title)}</span><span class="row" style="gap:4px">${stepLabel(c.id,STEPS_A)}${custom?`<button class="x" data-delscene="${c.id}" aria-label="Remove">×</button>`:""}</span></div>${pipe(c.id,STEPS_A,"A")}</div>`});
+  h+=`<div class="addrow"><input type="text" id="newScene" placeholder="New scene title"><button class="btn sm" id="addScene">Add</button></div></div>`;
+  $("#v-book").innerHTML=h;
+  $("#addScene").onclick=()=>{const t=$("#newScene").value.trim();if(!t)return;S.customScenes.push({id:"cm"+Date.now(),title:t});save();renderBook();};
+}
+
+/* ===================== RENDER: BLOG (Track B) ===================== */
+function renderBlog(){
+  const posts=[...POSTS,...S.customPosts].sort((a,b)=>(a.date||"9")<(b.date||"9")?-1:1);
+  const shipped=posts.filter(p=>(S.steps[p.id]??p.step)>=5).length;
+  let h=`<p class="muted">Track B. Claude expands your seeds; you finish. Steps: ${STEPS_B.join(" → ")}.</p>
+  <div class="grid2"><div class="stat"><div class="n">${shipped}/${posts.length}</div><div class="l">posts shipped</div></div>
+  <div class="stat"><div class="n">${posts.filter(p=>{const c=S.steps[p.id]??p.step;return c===2}).length}</div><div class="l">waiting on your EDIT</div></div></div>
+  <h2>Posts</h2><div class="card">`;
+  posts.forEach(p=>{const custom=p.id.startsWith("cp");h+=`<div class="item"><div class="row between"><span class="ttl">${esc(p.title)}</span><span class="row" style="gap:4px">${stepLabel(p.id,STEPS_B,p.step)}${custom?`<button class="x" data-delpost="${p.id}" aria-label="Remove">×</button>`:""}</span></div>
+    <div class="small muted mono">${p.date?nice(p.date):"No date"} · ${esc(p.pillar)}</div>${pipe(p.id,STEPS_B,"B",p.step)}</div>`});
+  h+=`<div style="margin-top:12px" class="grid2"><input type="text" id="npT" placeholder="Post title"><select id="npP">${["Burnout","Horror","ON","Memoir dispatch","Digital narcissism","Wild card"].map(x=>`<option>${x}</option>`).join("")}</select><input type="date" id="npD"><button class="btn sm" id="addPost">Add post</button></div></div>
+  <h2>How a post ships</h2><div class="card small">
+   <p><span class="step tB">SEED</span> Sunday 7:15 pm: your idea note, 2 weeks out.</p>
+   <p><span class="step tB">EXPAND</span> Midweek: ask Claude to draft it with [SEAN] markers.</p>
+   <p><span class="step tB">EDIT</span> Sunday 6 pm: fill every marker, cut what isn't you.</p>
+   <p><span class="step tB">VOICE</span> Read it out loud. Run the voice check (More tab).</p>
+   <p><span class="step tB">SHIP</span> Paste into Blog <span class="mono">content/on-deck</span> + schedule on Substack. Live Tuesday 6am.</p></div>
+  <h2>Podcast</h2><div class="card">`+[
+    {id:"pod1",date:"2027-01-03",t:"Start read-alouds: record each post on Sunday, attach before it ships"},
+    {id:"pod2",date:"2027-05-01",t:"First monthly episode: 1 film, 1 clinical concept, maybe 1 guest"},
+    {id:"pod3",date:"2027-04-06",t:"Paid tier: bonus episodes only after 3 months of the free show"},
+  ].map(x=>`<div class="ev"><input type="checkbox" class="ck" data-k="${x.id}" ${S.checks[x.id]?"checked":""}><div class="d">${short(x.date)}</div><div class="t">${esc(x.t)}</div></div>`).join("")+`</div>`;
+  $("#v-blog").innerHTML=h;
+  $("#addPost").onclick=()=>{const t=$("#npT").value.trim();if(!t)return;S.customPosts.push({id:"cp"+Date.now(),title:t,pillar:$("#npP").value,date:$("#npD").value||"",step:0});save();renderBlog();};
+}
+
+/* ===================== RENDER: YEAR ===================== */
+function renderYear(){
+  const ph=curPhase(), doneEv=EVENTS.filter(e=>S.checks[e.id]).length;
+  let h=`<div class="grid2"><div class="stat"><div class="n">${doneEv}/${EVENTS.length}</div><div class="l">dated milestones done</div><div class="bar"><i style="width:${Math.round(doneEv/EVENTS.length*100)}%"></i></div></div>
+  <div class="stat"><div class="n">${ph.n}</div><div class="l">current phase: ${esc(ph.name)}</div></div></div>
+  <h2>Phases</h2><div class="card">`;
+  PHASES.forEach(p=>{const cur=p===ph;h+=`<details ${cur?"open":""}><summary><span class="mono small ${cur?"tA":"faint"}">${p.n}</span><b>${esc(p.name)}</b><span class="mono small faint">${short(p.start)} to ${short(p.end)}</span><span class="chev">›</span></summary>
+    <div class="small" style="padding:0 0 12px 22px"><p><b>Saturday:</b> ${esc(p.sat)}</p><p><b>Sunday morning:</b> ${esc(p.sun)}</p><p class="muted">Done when: ${esc(p.done)}</p></div></details>`});
+  h+=`</div><h2>Dated milestones</h2><div class="card">`+EVENTS.map(evRow).join("")+`</div>`;
+  $("#v-year").innerHTML=h;
+}
+
+/* ===================== RENDER: AGENTS ===================== */
+function renderAgents(){
+  const all=[...AGENTS,...S.customAgents];
+  const st=a=>(S.agents[a.id]||{}).status||0;
+  const queried=all.filter(a=>st(a)>=2).length, req=all.filter(a=>st(a)===3).length, listed=all.filter(a=>st(a)>=1).length;
+  let h=`<div class="grid2"><div class="stat"><div class="n">${listed}/40</div><div class="l">agents researched</div><div class="bar"><i style="width:${Math.min(100,listed/40*100)}%"></i></div></div>
+  <div class="stat"><div class="n">${queried}</div><div class="l">queried · ${req} requested</div></div></div>
+  <h2>The steps</h2><div class="card">`+AGENT_STEPS.map((s,i)=>`<div class="ev"><input type="checkbox" class="ck" data-k="${s.id}" ${S.checks[s.id]?"checked":""}><div class="d">${i+1}</div><div class="t"><b>${esc(s.title)}</b><div class="small muted">${esc(s.detail)}</div></div></div>`).join("")+`</div>
+  <h2>Agents</h2><p class="small muted">Status changes often. Check each agent's own page the week you query.</p><div class="card">`;
+  all.forEach(a=>{const r=S.agents[a.id]||{};const custom=a.id.startsWith("ca");h+=`<div class="item agent"><div class="row between"><span class="ttl">${a.url?`<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.name)}</a>`:esc(a.name)}</span>${custom?`<button class="x" data-delagent="${a.id}" aria-label="Remove">×</button>`:""}</div>
+   <div class="small muted">${esc(a.agency)}${a.how?` · ${esc(a.how)}`:""}${a.note?` · ${esc(a.note)}`:""}</div>${a.fit?`<div class="small faint">${esc(a.fit)}</div>`:""}
+   <div class="meta"><select data-agent="${a.id}" data-f="status" aria-label="Status">${AG_STATUS.map((x,i)=>`<option value="${i}" ${(r.status||0)==i?"selected":""}>${x}</option>`).join("")}</select>
+   <select data-agent="${a.id}" data-f="batch" aria-label="Batch"><option value="">No batch</option>${[1,2,3,4,5,6].map(b=>`<option value="${b}" ${r.batch==b?"selected":""}>Batch ${b}</option>`).join("")}</select></div>
+   <input type="text" data-agent="${a.id}" data-f="notes" placeholder="Notes: date sent, reply, referral..." value="${esc(r.notes||"")}" style="margin-top:8px"></div>`});
+  h+=`<div style="margin-top:12px" class="grid2"><input type="text" id="naN" placeholder="Agent name"><input type="text" id="naA" placeholder="Agency"><input type="text" id="naU" placeholder="Link (optional)"><button class="btn sm" id="addAgent">Add agent</button></div></div>
+  <h2>The query</h2><div class="card small"><p>1 page. Hook sentence. 1 paragraph on the book. 2 comps. Bio + platform. 1 line on why this agent.</p><p class="muted">Send 10 at a time. Requested proposal goes out within 48 hours.</p></div>`;
+  $("#v-agents").innerHTML=h;
+  $("#addAgent").onclick=()=>{const n=$("#naN").value.trim();if(!n)return;S.customAgents.push({id:"ca"+Date.now(),name:n,agency:$("#naA").value.trim(),url:$("#naU").value.trim()});save();renderAgents();};
+}
+
+/* ===================== RENDER: MORE ===================== */
+function renderMore(){
+  const vDone=VOICE.filter((_,i)=>S.voice[i]).length;
+  let h=`<h2 style="margin-top:4px">The two tracks</h2>
+  <div class="tracks">
+   <div class="trk A"><h3 class="tA">Track A · Original</h3><div class="small">Book 1, memoir, proposal, query letter</div><div class="small muted" style="margin-top:6px">Sat 8 to 11:45 am, Sun 8 to 9:30 am</div>
+    <ol class="small"><li><b>MAP</b> You: outline from your own files</li><li><b>WRITE</b> You: new pages, forward only</li><li><b>REVISE</b> You: rework, expand, add or cut</li><li><b>EDIT</b> You: line edits. Claude: notes only</li><li><b>PROOF</b> Claude: APA + typo flags. You: yes or no</li></ol></div>
+   <div class="trk B"><h3 class="tB">Track B · Assisted</h3><div class="small">Blog, Substack, podcast scripts, captions</div><div class="small muted" style="margin-top:6px">Sun 6 to 7:35 pm, Claude midweek</div>
+    <ol class="small"><li><b>SEED</b> You: idea note, rant, paragraph</li><li><b class="hl">EXPAND</b> Claude: draft with [SEAN] markers</li><li><b>EDIT</b> You: fill markers, cut what isn't you</li><li><b>VOICE</b> You: read aloud, run the rules</li><li><b>SHIP</b> Blog repo: Tuesday 6am + Substack</li></ol></div>
+  </div>
+  <div class="fire"><b>One-way firewall.</b> Track B may quote and expand Track A. Track A never takes a sentence from Track B.</div>
+
+  <h2>Voice check <span class="mono small faint">${vDone}/${VOICE.length}</span></h2><div class="card">`+VOICE.map((v,i)=>`<div class="ev"><input type="checkbox" class="ck" data-voice="${i}" ${S.voice[i]?"checked":""}><div class="t">${esc(v)}</div></div>`).join("")+`<div class="btns"><button class="btn sm" id="voiceReset">Reset for next piece</button></div></div>
+
+  <h2>Guardrails</h2><div class="card small">
+   <p><b>Clinical material:</b> composites only, details changed, nothing traceable to a patient.</p>
+   <p><b>Your employer:</b> check UCSD Health's outside-activity and media policy before the book or podcast goes public.</p>
+   <p><b>Disclosure:</b> "Every word is mine; I used AI for research and formatting." Track A is built so that's true.</p></div>
+
+  <h2>Sync between devices</h2><div class="card small">
+   <p class="muted">Progress lives on this device. To share it between phone and computer, save it to a private GitHub repo. Needs a classic token with the <span class="mono">repo</span> scope (github.com → Settings → Developer settings → Personal access tokens). The token stays on this device.</p>
+   <input type="password" id="ghTok" placeholder="GitHub token (ghp_…)" value="${esc(S.sync.token||"")}" autocomplete="off" style="margin-top:8px">
+   <input type="text" id="ghRepo" placeholder="Repo name" value="${esc(S.sync.repo||"dead-reckoning-data")}" style="margin-top:8px">
+   <div class="btns"><button class="btn sm red" id="syncSave">Save + push</button><button class="btn sm" id="syncPull">Pull now</button>${S.sync.token?`<button class="btn sm" id="syncOff">Turn off</button>`:""}</div>
+   <p class="mono faint" id="syncMsg" style="margin-top:8px">${S.sync.last?"Last synced "+new Date(S.sync.last).toLocaleString():""}</p></div>
+
+  <h2>Backup</h2><div class="card small"><div class="btns" style="margin-top:0"><button class="btn sm" id="exp">Export JSON</button><button class="btn sm" id="imp">Import JSON</button><input type="file" id="impFile" accept=".json,application/json" hidden><button class="btn sm" id="wipe">Reset everything</button></div>
+   <p class="faint" style="margin-top:10px">Dead Reckoning · built from the Writing Plan doc. Dates match the Spector calendar file.</p></div>`;
+  $("#v-more").innerHTML=h;
+  $("#voiceReset").onclick=()=>{S.voice={};save();renderMore();};
+  $("#exp").onclick=()=>{const o=Object.assign({},S,{sync:{}});const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:"application/json"}));a.download=`dead-reckoning-${TODAY}.json`;a.click();};
+  $("#imp").onclick=()=>$("#impFile").click();
+  $("#impFile").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);const keep=S.sync;S=Object.assign(blank(),d,{sync:keep});save();renderAll();toast("Imported")}catch(err){toast("That file didn't parse")}})};
+  $("#wipe").onclick=()=>{if(confirm("Erase all progress on this device?")){const keep=S.sync;S=blank();S.sync=keep;save();renderAll();toast("Reset")}};
+  $("#syncSave").onclick=()=>{S.sync.token=$("#ghTok").value.trim();S.sync.repo=$("#ghRepo").value.trim()||"dead-reckoning-data";save(true);push(true);};
+  $("#syncPull").onclick=()=>pull(true);
+  const off=$("#syncOff"); if(off) off.onclick=()=>{S.sync={};save(true);renderMore();toast("Sync off")};
+}
+
+/* ===================== GITHUB SYNC (optional) ===================== */
+const gh=(url,opt={})=>fetch(url,Object.assign({},opt,{headers:Object.assign({Authorization:"Bearer "+S.sync.token,Accept:"application/vnd.github+json"},opt.headers||{})}));
+const b64e=s=>btoa(unescape(encodeURIComponent(s))), b64d=s=>decodeURIComponent(escape(atob(s.replace(/\n/g,""))));
+function syncMsg(t){const el=$("#syncMsg");if(el)el.textContent=t;}
+async function ensureRepo(){
+  if(!S.sync.owner){const r=await gh("https://api.github.com/user");if(!r.ok)throw new Error("Token rejected");S.sync.owner=(await r.json()).login;}
+  let r=await gh(`https://api.github.com/repos/${S.sync.owner}/${S.sync.repo}`);
+  if(r.status===404){r=await gh("https://api.github.com/user/repos",{method:"POST",body:JSON.stringify({name:S.sync.repo,private:true,description:"Dead Reckoning progress (auto-synced)"})});if(!r.ok)throw new Error("Couldn't create repo");}
+  else if(!r.ok) throw new Error("Repo check failed");
+}
+const fileUrl=()=>`https://api.github.com/repos/${S.sync.owner}/${S.sync.repo}/contents/progress.json`;
+let pushTimer=null;
+function schedulePush(){if(!S.sync.token)return;clearTimeout(pushTimer);pushTimer=setTimeout(()=>push(false),2500);}
+async function push(loud){
+  if(!S.sync.token)return;
+  try{
+    syncMsg("Pushing…"); await ensureRepo();
+    const g=await gh(fileUrl()); const sha=g.ok?(await g.json()).sha:undefined;
+    const o=Object.assign({},S,{sync:undefined});
+    const r=await gh(fileUrl(),{method:"PUT",body:JSON.stringify({message:"Progress "+new Date().toISOString(),content:b64e(JSON.stringify(o)),sha})});
+    if(!r.ok) throw new Error("Push failed ("+r.status+")");
+    S.sync.last=Date.now(); save(true); syncMsg("Last synced "+new Date(S.sync.last).toLocaleString()); if(loud)toast("Saved to GitHub");
+  }catch(e){syncMsg(e.message); if(loud)toast(e.message);}
+}
+async function pull(loud){
+  if(!S.sync.token)return;
+  try{
+    syncMsg("Pulling…"); await ensureRepo();
+    const r=await gh(fileUrl()); if(r.status===404){ if(loud)toast("Nothing saved yet"); syncMsg("Nothing saved yet"); return; }
+    if(!r.ok) throw new Error("Pull failed");
+    const remote=JSON.parse(b64d((await r.json()).content));
+    if(loud || (remote.updated||0)>(S.updated||0)){ const keep=S.sync; S=Object.assign(blank(),remote,{sync:keep}); S.sync.last=Date.now(); save(true); renderAll(); if(loud)toast("Pulled from GitHub"); }
+    syncMsg("Last synced "+new Date().toLocaleString());
+  }catch(e){syncMsg(e.message); if(loud)toast(e.message);}
+}
+
+/* ===================== WIRING ===================== */
+function $(s){return document.querySelector(s)}
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),1600);}
+const TITLES={today:"Today",book:"Book · Track A",blog:"Blog · Track B",year:"Your year",agents:"Agents",more:"Tracks + tools"};
+let VIEW="today";
+function show(v){VIEW=v;document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==="v-"+v));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));$("#hdr").textContent=TITLES[v];try{localStorage.setItem(LS+"_view",v)}catch(e){};window.scrollTo(0,0);}
+function renderAll(){TODAY=ymd(new Date());$("#hdrDate").textContent=nice(TODAY);renderToday();renderBook();renderBlog();renderYear();renderAgents();renderMore();}
+document.getElementById("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.v);});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.k){ if(t.checked)S.checks[t.dataset.k]=true; else delete S.checks[t.dataset.k]; save(); rerender(); }
+  else if(t.dataset.voice!=null){ S.voice[t.dataset.voice]=t.checked; save(); renderMore(); }
+  else if(t.dataset.agent){ const r=S.agents[t.dataset.agent]||(S.agents[t.dataset.agent]={}); r[t.dataset.f]=t.dataset.f==="status"?+t.value:t.value; save(); if(t.dataset.f==="status")renderAgents(); }
+});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  if(b.dataset.step){ S.steps[b.dataset.step]=+b.dataset.i; save(); rerender(); }
+  else if(b.dataset.delpost){ S.customPosts=S.customPosts.filter(p=>p.id!==b.dataset.delpost); save(); renderBlog(); }
+  else if(b.dataset.delscene){ S.customScenes=S.customScenes.filter(p=>p.id!==b.dataset.delscene); save(); renderBook(); }
+  else if(b.dataset.delagent){ S.customAgents=S.customAgents.filter(p=>p.id!==b.dataset.delagent); save(); renderAgents(); }
+});
+function rerender(){const y=window.scrollY;({today:renderToday,book:renderBook,blog:renderBlog,year:renderYear,agents:renderAgents,more:renderMore})[VIEW]();if(VIEW!=="today")renderToday();window.scrollTo(0,y);}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(ymd(new Date())!==TODAY)renderAll(); pull(false);}});
+
+renderAll();
+try{const v=localStorage.getItem(LS+"_view");if(v&&TITLES[v])show(v);}catch(e){}
+pull(false);
+if("serviceWorker" in navigator && location.protocol!=="file:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
